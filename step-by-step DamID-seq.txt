@@ -1,0 +1,54 @@
+Script with step-by-step instructions to do the quality filter and read mapping of fastq files from DamID-seq experiments on a personal computer. 
+
+
+$ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+
+$ bash Miniconda3-latest-Linux-x86_64.sh
+
+
+Copy your .fastq files to your working folder
+
+Use trim galore for adapter trimming and quality control of fastq files. See (https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/) for more details and options. The following instruction uses default parameters:
+
+$ trim_galore file_name.fastq.gz
+
+To run trim galore on different files simultaneously, use the following command:
+
+$ ls *.fastq.gz | xargs -n1 trim_galore $1
+
+Download the Arabidopsis genome:
+
+$ wget http://virtualplant.bio.puc.cl/share/DNAse/T10.fa
+
+$ wget https://www.arabidopsis.org/download_files/Genes/TAIR10_genome_release/TAIR10_chromosome_files/TAIR10_chr_all.fas.gz
+
+Unzip the file:
+
+$ gzip -d TAIR10_chr_all.fas.gz
+
+Install bowtie2 to do the read mapping: 
+
+$ conda install bowtie2
+
+
+Index the reference genome for the bowtie2 alignment tool:
+ 
+
+$ bowtie2-build -f TAIR10_chr_all.fas TAIR10_chr_all.bowtie2
+
+
+$ bowtie2 -x TAIR10_chr_all.bowtie2 -U file_name_trimmed.fq.gz  -s > file_name.sam
+
+
+Once the mapping files are generated, transform .sam to .bam files using the following commands:
+
+$ conda install -c bioconda samtools
+
+$ samtools view -S -b file_name.sam > file_name.bam
+
+$ samtools sort file_name.bam -o file_name_sorted.bam
+
+
+
+Use the .bam files to do the peak calling analysis described in the chapter.
+
